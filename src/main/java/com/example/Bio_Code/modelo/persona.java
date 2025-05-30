@@ -20,7 +20,7 @@ public class persona implements Serializable {
     private String no_documento;
     private String correo;
     @Lob
-    @Column(name = "foto")
+    @Column(name = "foto", columnDefinition = "LONGBLOB")
     private byte[] foto;
     @Lob
     @Column(name = "huella")
@@ -35,6 +35,7 @@ public class persona implements Serializable {
     @JoinColumn(name = "id_ficha", referencedColumnName = "id_ficha")
     private Ficha ficha;
     private String contrasena;
+    private Boolean estado;
 
     public String getContrasena() {
         return contrasena;
@@ -130,5 +131,13 @@ public class persona implements Serializable {
 
     public void setId_persona(int id_persona) {
         this.id_persona = id_persona;
+    }
+
+    public Boolean getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Boolean estado) {
+        this.estado = estado;
     }
 }

@@ -7,13 +7,11 @@ import com.example.Bio_Code.servicios.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:4200")  // permite Angular local
 @RestController
@@ -28,9 +26,26 @@ public class UsuarioController {
         this.usuarioRepository = usuarioRepository;
     }
 
+    // Listar todos los usuarios
     @GetMapping("/usuarios")
     public List<persona> listarUsuarios() {
-        return usuarioRepository.findAll();
+        return usuarioRepository.findByEstado(true);
+    }
+
+    // Obtener usuario por id
+    @GetMapping("/usuarios/{id}")
+    public ResponseEntity <persona> obtenerUsuarioPorId(@PathVariable Long id) {
+        Optional<persona> usuario = usuarioRepository.findById(String.valueOf(id));
+        if (usuario.isPresent()) {
+            return ResponseEntity.ok(usuario.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    // Crear un nuevo usuario (CREATE)
+    @PostMapping("/usuariosCrear")
+    public persona crearUsuario(@RequestBody persona nuevoUsuario) {
+        return usuarioRepository.save(nuevoUsuario);
     }
 
     @PostMapping("/login")
@@ -42,5 +57,6 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
+
 
 }
