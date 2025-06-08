@@ -20,6 +20,9 @@ public class Ficha implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_programa", referencedColumnName = "id_programa")
     private Programa programa;
+    @ManyToOne
+    @JoinColumn(name = "id_competencia", referencedColumnName = "id_competencia")
+    private Competencia competencia;
 
     public int getId_ficha() {
         return id_ficha;
@@ -51,5 +54,13 @@ public class Ficha implements Serializable {
 
     public void setJornada(Jornada jornada) {
         this.jornada = jornada;
+    }
+
+    public Competencia getCompetencia() {
+        return competencia;
+    }
+
+    public void setCompetencia(Competencia competencia) {
+        this.competencia = competencia;
     }
 }

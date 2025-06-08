@@ -13,10 +13,10 @@ public class Control_Asistencia implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    private int id_asistencia;
+    @Column(name = "id_asistencia")
+    private int idasistencia;
     private Date fecha_asistencia;
-    private int num_horas;
+    private boolean estancia;
     private String novedad;
     @Lob
     @Column(name = "documento_excusa")
@@ -24,30 +24,31 @@ public class Control_Asistencia implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_persona", referencedColumnName = "id_persona")
-    private persona persona;
+    private Persona persona;
+    private String descripcion;
 
-    public int getId_asistencia() {
-        return id_asistencia;
+    public int getIdasistencia() {
+        return idasistencia;
     }
 
-    public void setId_asistencia(int id_asistencia) {
-        this.id_asistencia = id_asistencia;
+    public void setIdasistencia(int idasistencia) {
+        this.idasistencia = idasistencia;
     }
 
-    public byte[] getDocumento_excusa() {
-        return documento_excusa;
+    public Date getFecha_asistencia() {
+        return fecha_asistencia;
     }
 
-    public void setDocumento_excusa(byte[] documento_excusa) {
-        this.documento_excusa = documento_excusa;
+    public void setFecha_asistencia(Date fecha_asistencia) {
+        this.fecha_asistencia = fecha_asistencia;
     }
 
-    public persona getPersona() {
-        return persona;
+    public boolean isEstancia() {
+        return estancia;
     }
 
-    public void setPersona(persona persona) {
-        this.persona = persona;
+    public void setEstancia(boolean estancia) {
+        this.estancia = estancia;
     }
 
     public String getNovedad() {
@@ -58,19 +59,27 @@ public class Control_Asistencia implements Serializable {
         this.novedad = novedad;
     }
 
-    public int getNum_horas() {
-        return num_horas;
+    public byte[] getDocumento_excusa() {
+        return documento_excusa;
     }
 
-    public void setNum_horas(int num_horas) {
-        this.num_horas = num_horas;
+    public void setDocumento_excusa(byte[] documento_excusa) {
+        this.documento_excusa = documento_excusa;
     }
 
-    public Date getFecha_asistencia() {
-        return fecha_asistencia;
+    public Persona getPersona() {
+        return persona;
     }
 
-    public void setFecha_asistencia(Date fecha_asistencia) {
-        this.fecha_asistencia = fecha_asistencia;
+    public void setPersona(Persona persona) {
+        this.persona = persona;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

@@ -7,12 +7,13 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "persona")
-public class persona implements Serializable {
+public class Persona implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id_persona;
+    @Column(name = "id_persona")
+    private Integer  idpersona;
     private String nombres;
     private String apellidos;
     @Column(name = "telefono")
@@ -125,12 +126,12 @@ public class persona implements Serializable {
         this.nombres = nombres;
     }
 
-    public int getId_persona() {
-        return id_persona;
+    public Integer  getIdpersona() {
+        return idpersona;
     }
 
-    public void setId_persona(int id_persona) {
-        this.id_persona = id_persona;
+    public void setIdpersona(Integer idpersona) {
+        this.idpersona = idpersona;
     }
 
     public Boolean getEstado() {
