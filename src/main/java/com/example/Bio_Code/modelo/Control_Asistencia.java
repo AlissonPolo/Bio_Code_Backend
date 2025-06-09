@@ -19,7 +19,7 @@ public class Control_Asistencia implements Serializable {
     private boolean estancia;
     private String novedad;
     @Lob
-    @Column(name = "documento_excusa")
+    @Column(name = "documento_excusa",columnDefinition = "MEDIUMBLOB")
     private byte[] documento_excusa;
 
     @ManyToOne
