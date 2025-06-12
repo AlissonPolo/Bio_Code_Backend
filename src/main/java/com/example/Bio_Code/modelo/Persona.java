@@ -14,28 +14,25 @@ public class Persona implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_persona")
     private Integer  idpersona;
-    private String nombres;
     private String apellidos;
-    @Column(name = "telefono")
-    private Long telefono;
-    private String no_documento;
+    private String contrasena;
     private String correo;
     @Lob
     @Column(name = "foto", columnDefinition = "LONGBLOB")
     private byte[] foto;
-    @Lob
-    @Column(name = "huella")
-    private byte[] huella;
+    private String no_documento;
+    private String nombres;
+    @Column(name = "telefono")
+    private Long telefono;
     @ManyToOne
-    @JoinColumn(name = "id_tipo_documento", referencedColumnName = "id_tipo_documento")
-    private Tipo_documento tipo_documento;
+    @JoinColumn(name = "id_ficha", referencedColumnName = "id_ficha")
+    private Ficha ficha;
     @ManyToOne
     @JoinColumn(name = "id_rol", referencedColumnName = "id_rol")
     private Rol rol;
     @ManyToOne
-    @JoinColumn(name = "id_ficha", referencedColumnName = "id_ficha")
-    private Ficha ficha;
-    private String contrasena;
+    @JoinColumn(name = "id_tipo_documento", referencedColumnName = "id_tipo_documento")
+    private Tipo_documento tipo_documento;
     private Boolean estado;
 
     public String getContrasena() {
@@ -68,14 +65,6 @@ public class Persona implements Serializable {
 
     public void setTipo_documento(Tipo_documento tipo_documento) {
         this.tipo_documento = tipo_documento;
-    }
-
-    public byte[] getHuella() {
-        return huella;
-    }
-
-    public void setHuella(byte[] huella) {
-        this.huella = huella;
     }
 
     public byte[] getFoto() {

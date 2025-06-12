@@ -1,4 +1,3 @@
-
 package com.example.Bio_Code.repositorio;
 
 import com.example.Bio_Code.modelo.Persona;
@@ -9,6 +8,5 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Persona, String> {
     Optional<Persona> findByCorreo(String correo);
-
     List<Persona> findByEstado(boolean estado);
 }

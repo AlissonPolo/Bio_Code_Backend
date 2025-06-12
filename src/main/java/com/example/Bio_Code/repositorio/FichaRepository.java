@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 
-public interface fichaRepository extends JpaRepository<Ficha, Long> {
+public interface FichaRepository extends JpaRepository<Ficha, Long> {
 
 }
 
