@@ -167,4 +167,18 @@ public class UsuarioController {
         return usuarioRepository.save(persona);
     }
 
-}
+        @PutMapping("/inhabilitarPersona/{id}")
+        public ResponseEntity<?> inhabilitarPersona(@PathVariable Integer id) {
+            Optional<Persona> personaOpt = usuarioRepository.findById(id);
+
+            if (personaOpt.isPresent()) {
+                Persona persona = personaOpt.get();
+                persona.setEstado(false);  // Cambiar estado a inactivo
+                usuarioRepository.save(persona);
+                return ResponseEntity.ok("Persona inhabilitada correctamente");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Persona no encontrada");
+            }
+        }
+    }
+
