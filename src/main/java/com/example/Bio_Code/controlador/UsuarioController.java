@@ -51,14 +51,12 @@ public class UsuarioController {
 
     // Obtener usuario por id
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Persona> obtenerUsuarioPorId(@PathVariable Long id) {
-        Optional<Persona> usuario = usuarioRepository.findById(String.valueOf(id));
-        if (usuario.isPresent()) {
-            return ResponseEntity.ok(usuario.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Persona> obtenerUsuarioPorId(@PathVariable Integer id) {
+        Optional<Persona> usuario = usuarioRepository.findById(id);
+        return usuario.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
 
 
@@ -87,15 +85,20 @@ public class UsuarioController {
         Rol rol = rolRepository.findById(dto.id_rol)
                 .orElseThrow(() -> new RuntimeException("Rol con id " + dto.id_rol + " no encontrado"));
 
-        Ficha ficha = fichaRepository.findById(dto.id_ficha)
-                .orElseThrow(() -> new RuntimeException("Ficha con id " + dto.id_ficha + " no encontrada"));
+// Validar ficha solo si se requiere
+        Ficha ficha = null;
+        if (dto.id_ficha != null) {
+            ficha = fichaRepository.findById(dto.id_ficha)
+                    .orElseThrow(() -> new RuntimeException("Ficha con id " + dto.id_ficha + " no encontrada"));
+        }
 
         Tipo_documento tipoDocumento = tipoDocumentoRepository.findById(dto.id_tipo_documento)
                 .orElseThrow(() -> new RuntimeException("TipoDocumento con id " + dto.id_tipo_documento + " no encontrado"));
 
         persona.setRol(rol);
-        persona.setFicha(ficha);
+        persona.setFicha(ficha); // Puede ser null
         persona.setTipo_documento(tipoDocumento);
+
 
         return usuarioRepository.save(persona);
     }
@@ -118,6 +121,50 @@ public class UsuarioController {
         return fichaRepository.findAll();
     }
 
+    @PutMapping("/usuariActualizar/{id}")
+    public Persona actualizarUsuario(@PathVariable Integer id, @RequestBody PersonaDTO dto) {
+        Persona persona = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Persona con ID " + id + " no encontrada"));
 
+        // Actualizar campos básicos
+        persona.setNombres(dto.nombres);
+        persona.setApellidos(dto.apellidos);
+        persona.setNo_documento(dto.no_documento);
+        persona.setCorreo(dto.correo);
+        persona.setTelefono(dto.telefono);
+        persona.setEstado(dto.estado);
+        persona.setContrasena(dto.contrasena);
+
+        // Actualizar foto si viene
+        if (dto.foto != null && !dto.foto.isEmpty()) {
+            try {
+                byte[] fotoBytes = Base64.getDecoder().decode(dto.foto);
+                persona.setFoto(fotoBytes);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("La foto no tiene un formato Base64 válido");
+            }
+        }
+
+        // Actualizar relaciones
+        Rol rol = rolRepository.findById(dto.id_rol)
+                .orElseThrow(() -> new RuntimeException("Rol con id " + dto.id_rol + " no encontrado"));
+
+        Tipo_documento tipoDocumento = tipoDocumentoRepository.findById(dto.id_tipo_documento)
+                .orElseThrow(() -> new RuntimeException("TipoDocumento con id " + dto.id_tipo_documento + " no encontrado"));
+
+        persona.setRol(rol);
+        persona.setTipo_documento(tipoDocumento);
+
+        // Ficha solo si se envía (puede ser null)
+        if (dto.id_ficha != null) {
+            Ficha ficha = fichaRepository.findById(dto.id_ficha)
+                    .orElseThrow(() -> new RuntimeException("Ficha con id " + dto.id_ficha + " no encontrada"));
+            persona.setFicha(ficha);
+        } else {
+            persona.setFicha(null); // Si no se envía ficha, la elimina
+        }
+
+        return usuarioRepository.save(persona);
+    }
 
 }
