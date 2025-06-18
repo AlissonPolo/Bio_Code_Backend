@@ -14,6 +14,7 @@ import com.example.Bio_Code.servicios.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
@@ -26,7 +27,8 @@ public class UsuarioController {
 
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -68,10 +70,10 @@ public class UsuarioController {
         persona.setNo_documento(dto.no_documento);
         persona.setCorreo(dto.correo);
         persona.setTelefono(dto.telefono);
-        persona.setEstado(true); // Siempre lo fuerzas a true
-        persona.setContrasena(dto.contrasena);
+        persona.setEstado(true);
+        persona.setContrasena(passwordEncoder.encode(dto.contrasena));
 
-        // Decodificar la foto Base64 (si viene)
+
         if (dto.foto != null && !dto.foto.isEmpty()) {
             try {
                 byte[] fotoBytes = Base64.getDecoder().decode(dto.foto);
@@ -102,7 +104,6 @@ public class UsuarioController {
 
         return usuarioRepository.save(persona);
     }
-
 
 
     // Login
