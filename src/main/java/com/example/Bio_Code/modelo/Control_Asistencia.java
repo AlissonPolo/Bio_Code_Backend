@@ -15,7 +15,9 @@ public class Control_Asistencia implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_asistencia")
     private int idasistencia;
-    private Date fecha_asistencia;
+
+    @Column(name = "fecha_asistencia")
+    private Date fechaAsistencia;
     private boolean estancia;
     private String novedad;
     @Lob
@@ -35,12 +37,12 @@ public class Control_Asistencia implements Serializable {
         this.idasistencia = idasistencia;
     }
 
-    public Date getFecha_asistencia() {
-        return fecha_asistencia;
+    public Date getFechaAsistencia() {
+        return fechaAsistencia;
     }
 
-    public void setFecha_asistencia(Date fecha_asistencia) {
-        this.fecha_asistencia = fecha_asistencia;
+    public void setFechaAsistencia(Date fechaAsistencia) {
+        this.fechaAsistencia = fechaAsistencia;
     }
 
     public boolean isEstancia() {

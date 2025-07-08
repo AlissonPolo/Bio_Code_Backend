@@ -12,4 +12,9 @@ public class PersonaDTO {
         public Integer id_tipo_documento;
         public String contrasena;
         public String foto;
+
+        public String nombre_rol;
+        public String codigo_ficha;
+        public String nombre_tipo_documento;
+
 }

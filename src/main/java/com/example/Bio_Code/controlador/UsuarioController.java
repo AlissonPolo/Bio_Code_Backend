@@ -11,12 +11,18 @@ import com.example.Bio_Code.repositorio.RolRepository;
 import com.example.Bio_Code.repositorio.TipoDocumentoRepository;
 import com.example.Bio_Code.repositorio.UsuarioRepository;
 import com.example.Bio_Code.servicios.AuthService;
+import com.example.Bio_Code.servicios.PersonaService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +30,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:4200")  // permite Angular local
 @RestController
 public class UsuarioController {
+    @Autowired
+    private PersonaService personaService;
 
     @Autowired
     private AuthService authService;
@@ -181,5 +189,81 @@ public class UsuarioController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Persona no encontrada");
             }
         }
+
+    @GetMapping("/exportarExcel")
+    public void exportarUsuariosExcel(
+            @RequestParam(required = false) String filtro,
+            HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=usuarios.xlsx");
+
+        List<PersonaDTO> usuarios;
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            // Llama a un método de tu servicio que filtre por texto
+            usuarios = personaService.obtenerFiltradosPorTexto(filtro.trim().toLowerCase());
+        } else {
+            usuarios = personaService.obtenerTodos();
+        }
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Usuarios");
+
+        // Estilo para encabezado
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 11);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        // Estilo para celdas normales
+        CellStyle normalStyle = workbook.createCellStyle();
+        normalStyle.setWrapText(true);
+
+        // Crear encabezados
+        String[] columnas = {
+                "Nombres", "Apellidos", "Tipo Documento", "Documento",
+                "Correo", "Teléfono", "Estado", "Rol", "Ficha"
+        };
+
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < columnas.length; i++) {
+            Cell cell = header.createCell(i);
+            cell.setCellValue(columnas[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        int rowNum = 1;
+        for (PersonaDTO usuario : usuarios) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(usuario.nombres);
+            row.createCell(1).setCellValue(usuario.apellidos);
+            row.createCell(2).setCellValue(usuario.nombre_tipo_documento != null ? usuario.nombre_tipo_documento : "");
+            row.createCell(3).setCellValue(usuario.no_documento);
+            row.createCell(4).setCellValue(usuario.correo);
+            row.createCell(5).setCellValue(usuario.telefono != null ? usuario.telefono.toString() : "");
+            row.createCell(6).setCellValue(Boolean.TRUE.equals(usuario.estado) ? "Activo" : "Inactivo");
+            row.createCell(7).setCellValue(usuario.nombre_rol != null ? usuario.nombre_rol : "");
+            row.createCell(8).setCellValue(usuario.codigo_ficha != null ? usuario.codigo_ficha : "");
+
+            for (int i = 0; i < columnas.length; i++) {
+                row.getCell(i).setCellStyle(normalStyle);
+            }
+        }
+
+        for (int i = 0; i < columnas.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        workbook.write(response.getOutputStream());
+        workbook.close();
     }
+
+
+}
+
 
