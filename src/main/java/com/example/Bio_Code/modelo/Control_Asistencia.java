@@ -28,6 +28,7 @@ public class Control_Asistencia implements Serializable {
     @JoinColumn(name = "id_persona", referencedColumnName = "id_persona")
     private Persona persona;
     private String descripcion;
+    private String tipoArchivo;
 
     public int getIdasistencia() {
         return idasistencia;
@@ -39,6 +40,14 @@ public class Control_Asistencia implements Serializable {
 
     public Date getFechaAsistencia() {
         return fechaAsistencia;
+    }
+
+    public String getTipoArchivo() {
+        return tipoArchivo;
+    }
+
+    public void setTipoArchivo(String tipoArchivo) {
+        this.tipoArchivo = tipoArchivo;
     }
 
     public void setFechaAsistencia(Date fechaAsistencia) {

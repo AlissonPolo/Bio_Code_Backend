@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface AsistenciaRepository extends JpaRepository<Control_Asistencia, String> {
+public interface AsistenciaRepository extends JpaRepository<Control_Asistencia, Integer> {
     List<Control_Asistencia> findByPersona_Idpersona(Integer idpersona);
 
     @Modifying
