@@ -26,7 +26,7 @@ public class ExportService {
 
     private final UsuarioRepository usuarioRepository;
     private final FichaRepository fichaRepository;
-    private final AsistenciaRepository asistenciaRepository;  // <-- inyectar repo asistencia
+    private final AsistenciaRepository asistenciaRepository;
 
     @Autowired
     public ExportService(UsuarioRepository usuarioRepository, FichaRepository fichaRepository,
@@ -39,14 +39,12 @@ public class ExportService {
     public List<PersonaConAsistenciaDTO> obtenerDatosFiltradosConAsistencia(ExportFiltroDTO filtros) {
         Integer idFicha = filtros.getIdFicha();
 
-        // Si no hay idFicha pero sí código de ficha, buscar idFicha desde código
         if (idFicha == null && filtros.getCodigoFicha() != null) {
             fichaRepository.findByCodigo(filtros.getCodigoFicha()).ifPresent(f -> {
                 filtros.setIdFicha(f.getId_ficha());
             });
         }
 
-        // Filtrar personas según filtros
         List<Persona> personas = usuarioRepository.findAll().stream()
                 .filter(p -> filtros.getNombreUsuario() == null || p.getNombres().toLowerCase().contains(filtros.getNombreUsuario().toLowerCase()))
                 .filter(p -> {
@@ -59,12 +57,10 @@ public class ExportService {
                         (p.getFicha() != null && filtros.getIdFicha() != null && p.getFicha().getId_ficha() == filtros.getIdFicha()))
                 .collect(Collectors.toList());
 
-
         for (Persona p : personas) {
             System.out.println("- " + p.getNombres() + " " + p.getApellidos());
         }
 
-        // Construir lista DTO con estado y fecha de última asistencia
         return personas.stream().map(p -> {
             List<Control_Asistencia> asistencias = asistenciaRepository.findByPersona_Idpersona(p.getIdpersona());
 
@@ -101,7 +97,7 @@ public class ExportService {
                     p.getCorreo(),
                     p.getTelefono() != null ? p.getTelefono().toString() : "",
                     p.getFicha() != null ? p.getFicha().getCodigo() : "",
-                    (p.getFicha() != null && p.getFicha().getPrograma() != null) ? p.getFicha().getPrograma().getNombre() : "",
+                    "", // Programa eliminado aquí para evitar confusión
                     (p.getFicha() != null && p.getFicha().getCompetencia() != null) ? p.getFicha().getCompetencia().getNombre() : "",
                     p.getEstado(),
                     estadoAsistencia,
@@ -132,7 +128,8 @@ public class ExportService {
             Row headerRow = sheet.createRow(0);
             String[] headers = {
                     "Nombre Completo", "Correo", "Teléfono", "Ficha",
-                    "Programa", "Estado Asistencia", "Competencia", "Fecha Asistencia"
+                    // "Programa",  <-- eliminado
+                    "Estado Asistencia", "Competencia", "Fecha Asistencia"
             };
 
             for (int i = 0; i < headers.length; i++) {
@@ -162,29 +159,27 @@ public class ExportService {
                 c3.setCellValue(p.getFichaCodigo() != null ? p.getFichaCodigo() : "");
                 c3.setCellStyle(normalStyle);
 
+                // Saltado el índice 4 porque se quitó Programa
+
                 Cell c4 = row.createCell(4);
-                c4.setCellValue(p.getProgramaNombre() != null ? p.getProgramaNombre() : "");
+                c4.setCellValue(p.getEstadoAsistencia() != null ? p.getEstadoAsistencia() : "");
                 c4.setCellStyle(normalStyle);
 
                 Cell c5 = row.createCell(5);
-                c5.setCellValue(p.getEstadoAsistencia() != null ? p.getEstadoAsistencia() : "");
+                c5.setCellValue(p.getCompetenciaNombre() != null ? p.getCompetenciaNombre() : "");
                 c5.setCellStyle(normalStyle);
 
                 Cell c6 = row.createCell(6);
-                c6.setCellValue(p.getCompetenciaNombre() != null ? p.getCompetenciaNombre() : "");
-                c6.setCellStyle(normalStyle);
-
-                Cell c7 = row.createCell(7);
                 if (p.getFechaUltimaAsistencia() != null) {
                     String fechaStr = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(p.getFechaUltimaAsistencia());
-                    c7.setCellValue(fechaStr);
+                    c6.setCellValue(fechaStr);
                 } else {
-                    c7.setCellValue("Sin registro");
+                    c6.setCellValue("Sin registro");
                 }
-                c7.setCellStyle(normalStyle);
+                c6.setCellStyle(normalStyle);
             }
 
-            // Auto-ajustar columnas
+            // Auto-ajustar columnas (ahora 7 columnas)
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
             }
