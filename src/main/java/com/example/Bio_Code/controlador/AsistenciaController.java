@@ -23,10 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -85,18 +82,24 @@ public class AsistenciaController {
         return asistenciaRepository.findByPersona_Idpersona(id);
     }
 
-    @PostMapping("/asistencias/{idPersona}/excusa")
-    public ResponseEntity<?> subirExcusa(
-            @PathVariable int idPersona,
+    @PutMapping("/asistencias/excusa/{idAsistencia}")
+    public ResponseEntity<?> actualizarExcusa(
+            @PathVariable int idAsistencia,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo,
             @RequestParam(value = "descripcion", required = false) String descripcion) {
+
+        System.out.println("Llega petición PUT /asistencias/excusa/" + idAsistencia);
+        if (archivo != null) {
+            System.out.println("Archivo recibido: " + archivo.getOriginalFilename() + " | size: " + archivo.getSize());
+        }
+
         try {
-            List<Control_Asistencia> asistencias = asistenciaRepository.findByPersona_Idpersona(idPersona);
-            if (asistencias.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró asistencia para el usuario");
+            Optional<Control_Asistencia> asistenciaOpt = asistenciaRepository.findById(idAsistencia);
+            if (!asistenciaOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró la asistencia");
             }
 
-            Control_Asistencia asistencia = asistencias.get(0);
+            Control_Asistencia asistencia = asistenciaOpt.get();
 
             if (archivo != null && !archivo.isEmpty()) {
                 asistencia.setDocumento_excusa(archivo.getBytes());
@@ -119,6 +122,8 @@ public class AsistenciaController {
                     .body("Error al guardar la excusa: " + e.getMessage());
         }
     }
+
+
 
     @GetMapping("/asistencias/{id}/excusa-descargar")
     public ResponseEntity<Resource> descargarExcusa(@PathVariable int id) {
@@ -152,4 +157,77 @@ public class AsistenciaController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombreArchivo + "\"")
                 .body(recurso);
     }
+
+
+    @GetMapping("/asistencias/persona/{id}/hoy")
+    public ResponseEntity<?> obtenerAsistenciaDeHoy(@PathVariable Integer id) {
+        try {
+            // Calculas inicio y fin del día (como ya haces)
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            Date inicio = calendar.getTime();
+
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            Date fin = calendar.getTime();
+
+            List<Control_Asistencia> asistencias = asistenciaRepository.findAsistenciaHoy(id, inicio, fin);
+
+            if (!asistencias.isEmpty()) {
+                Control_Asistencia asistencia = asistencias.get(0);  // primer resultado
+                return ResponseEntity.ok(asistencia);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No hay asistencia para hoy");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor: " + e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/asistencias/persona/{id}/hoy")
+    public ResponseEntity<?> actualizarAsistenciaDeHoy(@PathVariable Integer id, @RequestBody Control_Asistencia datos) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date inicio = calendar.getTime();
+
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        Date fin = calendar.getTime();
+
+        List<Control_Asistencia> asistencias = asistenciaRepository.findAsistenciaHoy(id, inicio, fin);
+
+        Optional<Control_Asistencia> asistenciaOpt = asistencias.isEmpty()
+                ? Optional.empty()
+                : Optional.of(asistencias.get(0));
+
+        if (asistenciaOpt.isPresent()) {
+            Control_Asistencia asistencia = asistenciaOpt.get();
+
+            // Campos que se pueden actualizar (ajusta si necesitas otros)
+            asistencia.setEstancia(datos.isEstancia());
+            asistencia.setNovedad(datos.getNovedad());
+            asistencia.setDescripcion(datos.getDescripcion());
+            asistencia.setDocumento_excusa(datos.getDocumento_excusa());
+            asistencia.setTipoArchivo(datos.getTipoArchivo());
+
+            asistenciaRepository.save(asistencia);
+            return ResponseEntity.ok(asistencia);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró asistencia de hoy para actualizar.");
+        }
+    }
+
+
 }
