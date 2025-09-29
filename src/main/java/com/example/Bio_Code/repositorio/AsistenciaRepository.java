@@ -18,7 +18,7 @@ public interface AsistenciaRepository extends JpaRepository<Control_Asistencia, 
     @Modifying
     @Transactional
     @Query("UPDATE Control_Asistencia c SET c.descripcion = '', c.documento_excusa = null WHERE c.idasistencia = :id")
-    void limpiarExcusa(@Param("id") Integer idAsistencia);
+    void limpiarExcusa(@Param("id") int idAsistencia);
     @Query("SELECT a FROM Control_Asistencia a WHERE a.persona.idpersona = :idPersona AND a.fechaAsistencia BETWEEN :inicio AND :fin")
     List<Control_Asistencia> findAsistenciaHoy(@Param("idPersona") Integer idPersona,
                                                @Param("inicio") Date inicio,
