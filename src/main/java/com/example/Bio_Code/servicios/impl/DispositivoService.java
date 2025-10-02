@@ -357,11 +357,12 @@ public class DispositivoService implements IDispositivoService {
                                             String responsable) {
         return dispositivoRepository.findDispositivosConFiltros(
             nombre != null && !nombre.trim().isEmpty() ? nombre.trim() : null,
-            tipo,
-            estado,
+            tipo != null ? tipo.name() : null,
+            estado != null ? estado.name() : null,
             ubicacion != null && !ubicacion.trim().isEmpty() ? ubicacion.trim() : null,
             responsable != null && !responsable.trim().isEmpty() ? responsable.trim() : null
         );
     }
 }
+
 

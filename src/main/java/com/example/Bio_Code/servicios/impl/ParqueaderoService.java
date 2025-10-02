@@ -75,10 +75,6 @@ public class ParqueaderoService implements IParqueaderoService {
             throw new IllegalArgumentException("El ID no puede ser nulo");
         }
         
-        if (vehiculo == null) {
-            throw new IllegalArgumentException("El vehículo no puede ser nulo");
-        }
-        
         Optional<ParqueaderoVehiculo> vehiculoExistente = parqueaderoRepository.findById(id);
         if (vehiculoExistente.isEmpty()) {
             throw new IllegalArgumentException("No se encontró el vehículo con ID: " + id);
@@ -86,44 +82,18 @@ public class ParqueaderoService implements IParqueaderoService {
         
         ParqueaderoVehiculo vehiculoAActualizar = vehiculoExistente.get();
         
-        // Actualizar placa si se proporciona
-        if (vehiculo.getPlaca() != null && !vehiculo.getPlaca().trim().isEmpty()) {
-            String nuevaPlaca = vehiculo.getPlaca().trim().toUpperCase();
-            // Verificar que la nueva placa no esté en uso por otro vehículo
-            if (!nuevaPlaca.equals(vehiculoAActualizar.getPlaca())) {
-                if (parqueaderoRepository.existeVehiculoParqueadoConPlaca(nuevaPlaca)) {
-                    throw new IllegalStateException("Ya existe un vehículo con la placa " + nuevaPlaca + " parqueado");
-                }
-                vehiculoAActualizar.setPlaca(nuevaPlaca);
-            }
-        }
-        
-        // Actualizar tipo si se proporciona
-        if (vehiculo.getTipo() != null) {
-            vehiculoAActualizar.setTipo(vehiculo.getTipo());
-        }
-        
-        // Actualizar marca si se proporciona
         if (vehiculo.getMarca() != null) {
             vehiculoAActualizar.setMarca(vehiculo.getMarca().trim());
         }
         
-        // Actualizar modelo si se proporciona
         if (vehiculo.getModelo() != null) {
             vehiculoAActualizar.setModelo(vehiculo.getModelo().trim());
         }
         
-        // Actualizar color si se proporciona
         if (vehiculo.getColor() != null) {
             vehiculoAActualizar.setColor(vehiculo.getColor().trim());
         }
         
-        // Actualizar fecha de entrada si se proporciona
-        if (vehiculo.getFechaEntrada() != null) {
-            vehiculoAActualizar.setFechaEntrada(vehiculo.getFechaEntrada());
-        }
-        
-        // Actualizar fecha de salida si se proporciona
         if (vehiculo.getFechaSalida() != null) {
             vehiculoAActualizar.setFechaSalida(vehiculo.getFechaSalida());
         }

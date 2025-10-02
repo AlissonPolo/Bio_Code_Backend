@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,24 +45,6 @@ public class DispositivosController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener los dispositivos", e.getMessage()));
-        }
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DispositivoDTO>> obtenerPorId(@PathVariable Long id) {
-        try {
-            Optional<Dispositivo> dispositivo = dispositivoService.obtenerPorId(id);
-            
-            if (dispositivo.isPresent()) {
-                DispositivoDTO dispositivoDTO = convertirADTO(dispositivo.get());
-                return ResponseEntity.ok(ApiResponse.success("Dispositivo encontrado", dispositivoDTO));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Dispositivo no encontrado con ID: " + id));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener el dispositivo", e.getMessage()));
         }
     }
 
@@ -161,6 +144,29 @@ public class DispositivosController {
         }
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse<List<DispositivoDTO>>> buscarConFiltrosGet(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Dispositivo.TipoDispositivo tipo,
+            @RequestParam(required = false) Dispositivo.EstadoDispositivo estado,
+            @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String responsable) {
+        try {
+            List<Dispositivo> dispositivos = dispositivoService.buscarConFiltros(
+                nombre, tipo, estado, ubicacion, responsable
+            );
+            
+            List<DispositivoDTO> dispositivosDTO = dispositivos.stream()
+                    .map(this::convertirADTO)
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(ApiResponse.success("Búsqueda completada exitosamente", dispositivosDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al buscar dispositivos", e.getMessage()));
+        }
+    }
+
     @PostMapping("/buscar")
     public ResponseEntity<ApiResponse<List<DispositivoDTO>>> buscarConFiltros(@RequestBody DispositivoFiltroDTO filtros) {
         try {
@@ -180,6 +186,24 @@ public class DispositivosController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al buscar dispositivos", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DispositivoDTO>> obtenerPorId(@PathVariable Long id) {
+        try {
+            Optional<Dispositivo> dispositivo = dispositivoService.obtenerPorId(id);
+            
+            if (dispositivo.isPresent()) {
+                DispositivoDTO dispositivoDTO = convertirADTO(dispositivo.get());
+                return ResponseEntity.ok(ApiResponse.success("Dispositivo encontrado", dispositivoDTO));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Dispositivo no encontrado con ID: " + id));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener el dispositivo", e.getMessage()));
         }
     }
 
@@ -330,24 +354,62 @@ public class DispositivosController {
     }
 
     @GetMapping("/pdf")
-    public ResponseEntity<byte[]> generarReportePdf() {
+    public ResponseEntity<byte[]> generarReportePdf(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Dispositivo.TipoDispositivo tipo,
+            @RequestParam(required = false) Dispositivo.EstadoDispositivo estado,
+            @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String responsable) {
         try {
-            // Obtener todos los dispositivos
-            List<Dispositivo> dispositivos = dispositivoService.listarTodos();
+            List<Dispositivo> dispositivos;
+            boolean esFiltrado = false;
             
-            // Generar el PDF
-            byte[] pdfBytes = dispositivoPdfService.generarReporteDispositivos(dispositivos);
+            // Verificar si se aplicaron filtros
+            if (nombre != null || tipo != null || estado != null || ubicacion != null || responsable != null) {
+                // Aplicar filtros usando la misma lógica que el endpoint de búsqueda
+                dispositivos = dispositivoService.buscarConFiltros(nombre, tipo, estado, ubicacion, responsable);
+                esFiltrado = true;
+            } else {
+                // Sin filtros, obtener todos los dispositivos
+                dispositivos = dispositivoService.listarTodos();
+            }
+            
+            // Validar que se encontraron dispositivos
+            if (dispositivos.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(null);
+            }
+            
+            // Crear objeto con información de filtros para el PDF
+            DispositivoFiltroDTO filtrosAplicados = null;
+            if (esFiltrado) {
+                filtrosAplicados = new DispositivoFiltroDTO();
+                filtrosAplicados.setNombre(nombre);
+                filtrosAplicados.setTipo(tipo);
+                filtrosAplicados.setEstado(estado);
+                filtrosAplicados.setUbicacion(ubicacion);
+                filtrosAplicados.setResponsable(responsable);
+            }
+            
+            // Generar el PDF con información de filtros
+            byte[] pdfBytes = dispositivoPdfService.generarReporteDispositivos(dispositivos, filtrosAplicados);
+            
+            // Generar nombre de archivo dinámico
+            String nombreArchivo = generarNombreArchivo(esFiltrado);
             
             // Configurar headers para descarga del archivo
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "reporte_dispositivos.pdf");
+            headers.setContentDispositionFormData("attachment", nombreArchivo);
             headers.setContentLength(pdfBytes.length);
             
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(pdfBytes);
                     
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(null);
         } catch (Exception e) {
             // En caso de error, retornamos un response con status 500
             HttpHeaders headers = new HttpHeaders();
@@ -396,5 +458,19 @@ public class DispositivosController {
         dispositivo.setFechaUltimoMantenimiento(dto.getFechaUltimoMantenimiento());
         dispositivo.setObservaciones(dto.getObservaciones());
         return dispositivo;
+    }
+    
+    /**
+     * Genera el nombre del archivo PDF según si se aplicaron filtros o no
+     */
+    private String generarNombreArchivo(boolean esFiltrado) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String fecha = dateFormat.format(new java.util.Date());
+        
+        if (esFiltrado) {
+            return "reporte-dispositivos-filtrado-" + fecha + ".pdf";
+        } else {
+            return "reporte-dispositivos-completo-" + fecha + ".pdf";
+        }
     }
 }

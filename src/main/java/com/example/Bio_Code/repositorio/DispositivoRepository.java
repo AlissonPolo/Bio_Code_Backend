@@ -68,18 +68,23 @@ public interface DispositivoRepository extends JpaRepository<Dispositivo, Long> 
     boolean existsByCodigoInventario(String codigoInventario);
     
     // Buscar dispositivos por múltiples criterios
-    @Query("SELECT d FROM Dispositivo d WHERE " +
-           "(:nombre IS NULL OR UPPER(d.nombre) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:tipo IS NULL OR d.tipo = :tipo) AND " +
-           "(:estado IS NULL OR d.estado = :estado) AND " +
+    @Query(value = "SELECT * FROM dispositivos d WHERE " +
+           "(:nombre IS NULL OR " +
+           "  UPPER(d.nombre) LIKE UPPER(CONCAT('%', :nombre, '%')) OR " +
+           "  UPPER(d.numero_serie) LIKE UPPER(CONCAT('%', :nombre, '%')) OR " +
+           "  UPPER(d.codigo_inventario) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:tipo IS NULL OR d.tipo = CAST(:tipo AS VARCHAR)) AND " +
+           "(:estado IS NULL OR d.estado = CAST(:estado AS VARCHAR)) AND " +
            "(:ubicacion IS NULL OR UPPER(d.ubicacion) LIKE UPPER(CONCAT('%', :ubicacion, '%'))) AND " +
-           "(:responsable IS NULL OR UPPER(d.responsable) LIKE UPPER(CONCAT('%', :responsable, '%')))")
+           "(:responsable IS NULL OR UPPER(d.responsable) LIKE UPPER(CONCAT('%', :responsable, '%')))",
+           nativeQuery = true)
     List<Dispositivo> findDispositivosConFiltros(
         @Param("nombre") String nombre,
-        @Param("tipo") Dispositivo.TipoDispositivo tipo,
-        @Param("estado") Dispositivo.EstadoDispositivo estado,
+        @Param("tipo") String tipo,
+        @Param("estado") String estado,
         @Param("ubicacion") String ubicacion,
         @Param("responsable") String responsable
     );
 }
+
 

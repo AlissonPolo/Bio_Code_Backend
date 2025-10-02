@@ -1,5 +1,6 @@
 package com.example.Bio_Code.servicios;
 
+import com.example.Bio_Code.dto.DispositivoFiltroDTO;
 import com.example.Bio_Code.modelo.Dispositivo;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -26,9 +27,16 @@ public class DispositivoPdfService {
     private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
     /**
-     * Genera un PDF con la información de todos los dispositivos
+     * Genera un PDF con la información de todos los dispositivos (sin filtros)
      */
     public byte[] generarReporteDispositivos(List<Dispositivo> dispositivos) {
+        return generarReporteDispositivos(dispositivos, null);
+    }
+    
+    /**
+     * Genera un PDF con la información de dispositivos aplicando filtros
+     */
+    public byte[] generarReporteDispositivos(List<Dispositivo> dispositivos, DispositivoFiltroDTO filtros) {
         try {
             Document document = new Document(PageSize.A4.rotate()); // Orientación horizontal para más columnas
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -37,10 +45,15 @@ public class DispositivoPdfService {
             document.open();
 
             // Título del documento
-            agregarTitulo(document);
+            agregarTitulo(document, filtros);
+            
+            // Información de filtros aplicados (si los hay)
+            if (filtros != null) {
+                agregarInfoFiltros(document, filtros);
+            }
             
             // Información del reporte
-            agregarInfoReporte(document, dispositivos.size());
+            agregarInfoReporte(document, dispositivos.size(), filtros);
 
             // Tabla de dispositivos
             agregarTablaDispositivos(document, dispositivos);
@@ -56,17 +69,64 @@ public class DispositivoPdfService {
         }
     }
 
-    private void agregarTitulo(Document document) throws DocumentException {
-        Paragraph titulo = new Paragraph("REPORTE DE DISPOSITIVOS", TITLE_FONT);
+    private void agregarTitulo(Document document, DispositivoFiltroDTO filtros) throws DocumentException {
+        String tituloTexto = filtros != null ? "REPORTE DE DISPOSITIVOS - FILTRADO" : "REPORTE DE DISPOSITIVOS - COMPLETO";
+        Paragraph titulo = new Paragraph(tituloTexto, TITLE_FONT);
         titulo.setAlignment(Element.ALIGN_CENTER);
         titulo.setSpacingAfter(20);
         document.add(titulo);
     }
+    
+    private void agregarInfoFiltros(Document document, DispositivoFiltroDTO filtros) throws DocumentException {
+        // Título de la sección de filtros
+        Paragraph tituloFiltros = new Paragraph("FILTROS APLICADOS", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.DARK_GRAY));
+        tituloFiltros.setAlignment(Element.ALIGN_LEFT);
+        tituloFiltros.setSpacingAfter(10);
+        document.add(tituloFiltros);
+        
+        // Tabla de filtros
+        PdfPTable filtrosTable = new PdfPTable(2);
+        filtrosTable.setWidthPercentage(100);
+        filtrosTable.setSpacingAfter(15);
+        
+        // Agregar filtros aplicados
+        if (filtros.getNombre() != null && !filtros.getNombre().trim().isEmpty()) {
+            agregarFilaFiltro(filtrosTable, "Nombre/Serie/Código:", filtros.getNombre());
+        }
+        if (filtros.getTipo() != null) {
+            agregarFilaFiltro(filtrosTable, "Tipo:", filtros.getTipo().getDisplayName());
+        }
+        if (filtros.getEstado() != null) {
+            agregarFilaFiltro(filtrosTable, "Estado:", filtros.getEstado().getDisplayName());
+        }
+        if (filtros.getUbicacion() != null && !filtros.getUbicacion().trim().isEmpty()) {
+            agregarFilaFiltro(filtrosTable, "Ubicación:", filtros.getUbicacion());
+        }
+        if (filtros.getResponsable() != null && !filtros.getResponsable().trim().isEmpty()) {
+            agregarFilaFiltro(filtrosTable, "Responsable:", filtros.getResponsable());
+        }
+        
+        document.add(filtrosTable);
+    }
+    
+    private void agregarFilaFiltro(PdfPTable table, String etiqueta, String valor) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(etiqueta, new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD)));
+        labelCell.setBorder(Rectangle.NO_BORDER);
+        labelCell.setPaddingBottom(3);
+        
+        PdfPCell valueCell = new PdfPCell(new Phrase(valor, NORMAL_FONT));
+        valueCell.setBorder(Rectangle.NO_BORDER);
+        valueCell.setPaddingBottom(3);
+        
+        table.addCell(labelCell);
+        table.addCell(valueCell);
+    }
 
-    private void agregarInfoReporte(Document document, int totalDispositivos) throws DocumentException {
+    private void agregarInfoReporte(Document document, int totalDispositivos, DispositivoFiltroDTO filtros) throws DocumentException {
         PdfPTable infoTable = new PdfPTable(2);
         infoTable.setWidthPercentage(100);
         infoTable.setSpacingAfter(15);
+        infoTable.setWidths(new float[]{1f, 1f});
 
         // Fecha de generación
         PdfPCell fechaLabel = new PdfPCell(new Phrase("Fecha de generación:", NORMAL_FONT));
@@ -78,16 +138,27 @@ public class DispositivoPdfService {
         fechaValue.setPaddingBottom(5);
 
         // Total de dispositivos
-        PdfPCell totalLabel = new PdfPCell(new Phrase("Total de dispositivos:", NORMAL_FONT));
+        String labelTexto = filtros != null ? "Dispositivos encontrados:" : "Total de dispositivos:";
+        PdfPCell totalLabel = new PdfPCell(new Phrase(labelTexto, NORMAL_FONT));
         totalLabel.setBorder(Rectangle.NO_BORDER);
         
         PdfPCell totalValue = new PdfPCell(new Phrase(String.valueOf(totalDispositivos), NORMAL_FONT));
         totalValue.setBorder(Rectangle.NO_BORDER);
+        
+        // Tipo de reporte
+        PdfPCell tipoLabel = new PdfPCell(new Phrase("Tipo de reporte:", NORMAL_FONT));
+        tipoLabel.setBorder(Rectangle.NO_BORDER);
+        
+        String tipoTexto = filtros != null ? "Filtrado" : "Completo";
+        PdfPCell tipoValue = new PdfPCell(new Phrase(tipoTexto, NORMAL_FONT));
+        tipoValue.setBorder(Rectangle.NO_BORDER);
 
         infoTable.addCell(fechaLabel);
         infoTable.addCell(fechaValue);
         infoTable.addCell(totalLabel);
         infoTable.addCell(totalValue);
+        infoTable.addCell(tipoLabel);
+        infoTable.addCell(tipoValue);
 
         document.add(infoTable);
     }
@@ -218,3 +289,4 @@ public class DispositivoPdfService {
         document.add(pie);
     }
 }
+
