@@ -18,6 +18,8 @@ public interface IParqueaderoService {
     List<ParqueaderoVehiculo> obtenerVehiculosParqueados();
     List<ParqueaderoVehiculo> listarPorFecha(LocalDate fecha);
     List<ParqueaderoVehiculo> listarPorFechaHoy();
+    List<ParqueaderoVehiculo> buscarPorTexto(String texto);
+
 
 
 }

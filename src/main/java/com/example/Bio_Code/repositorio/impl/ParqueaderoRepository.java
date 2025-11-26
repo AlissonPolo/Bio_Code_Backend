@@ -27,4 +27,14 @@ public interface ParqueaderoRepository extends JpaRepository<ParqueaderoVehiculo
 
     @Query("SELECT v FROM ParqueaderoVehiculo v " + "WHERE v.fechaEntrada BETWEEN :inicio AND :fin " + "AND v.fechaSalida IS NULL " + "AND v.actualizadoEn <> v.creadoEn")
     List<ParqueaderoVehiculo> listarPorFecha(@Param("inicio") Instant inicio, @Param("fin") Instant fin);
+    @Query("""
+       SELECT v FROM ParqueaderoVehiculo v
+       WHERE LOWER(v.placa) LIKE %:texto%
+          OR LOWER(v.marca) LIKE %:texto%
+          OR LOWER(v.modelo) LIKE %:texto%
+          OR LOWER(v.color) LIKE %:texto%
+          OR LOWER(v.tipo) LIKE %:texto%
+       """)
+    List<ParqueaderoVehiculo> buscarPorTexto(@Param("texto") String texto);
+
 }

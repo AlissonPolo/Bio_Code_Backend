@@ -5,16 +5,31 @@ import com.example.Bio_Code.dto.ParqueaderoVehiculoDTO;
 import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
 import com.example.Bio_Code.servicios.EmailService;
 import com.example.Bio_Code.servicios.IParqueaderoService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 
 @RestController
 @RequestMapping("/api/parqueadero")
@@ -231,4 +246,75 @@ public class ParqueaderoController {
 
         return vehiculo;
     }
+    @GetMapping("/exportarExcel")
+    public void exportarVehiculosExcel(
+            @RequestParam(required = false) String filtro,
+            HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=vehiculos_parqueadero.xlsx");
+
+        List<ParqueaderoVehiculo> vehiculos;
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            vehiculos = parqueaderoService.buscarPorTexto(filtro.trim().toLowerCase());
+        } else {
+            vehiculos = parqueaderoService.listarTodos();
+        }
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Parqueadero");
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 11);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        CellStyle normalStyle = workbook.createCellStyle();
+        normalStyle.setWrapText(true);
+
+        String[] columnas = {
+                "ID", "Placa", "Tipo", "Marca", "Modelo", "Color",
+                "Fecha Entrada", "Fecha Salida", "Correo Electrónico", "Creado En"
+        };
+
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < columnas.length; i++) {
+            Cell cell = header.createCell(i);
+            cell.setCellValue(columnas[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        int rowNum = 1;
+        for (ParqueaderoVehiculo v : vehiculos) {
+            Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0).setCellValue(v.getId());
+            row.createCell(1).setCellValue(v.getPlaca());
+            row.createCell(2).setCellValue(v.getTipo() != null ? String.valueOf(v.getTipo()) : "");
+            row.createCell(3).setCellValue(v.getMarca() != null ? v.getMarca() : "");
+            row.createCell(4).setCellValue(v.getModelo() != null ? v.getModelo() : "");
+            row.createCell(5).setCellValue(v.getColor() != null ? v.getColor() : "");
+            row.createCell(6).setCellValue(v.getFechaEntrada() != null ? v.getFechaEntrada().toString() : "");
+            row.createCell(7).setCellValue(v.getFechaSalida() != null ? v.getFechaSalida().toString() : "");
+            row.createCell(8).setCellValue(v.getCorreoElectronico() != null ? v.getCorreoElectronico() : "");
+            row.createCell(9).setCellValue(v.getCreadoEn() != null ? v.getCreadoEn().toString() : "");
+
+            for (int i = 0; i < columnas.length; i++) {
+                row.getCell(i).setCellStyle(normalStyle);
+            }
+        }
+
+        for (int i = 0; i < columnas.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        workbook.write(response.getOutputStream());
+        workbook.close();
+    }
+
 }
