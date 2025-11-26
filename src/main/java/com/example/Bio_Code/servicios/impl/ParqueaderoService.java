@@ -194,4 +194,20 @@ public class ParqueaderoService implements IParqueaderoService {
             System.err.println("Error al enviar correo de notificación: " + e.getMessage());
         }
     }
+
+    @Override
+    public List<ParqueaderoVehiculo> buscarPorTexto(String texto) {
+        String textoFinal = texto.toLowerCase();
+        return parqueaderoRepository.findAll().stream()
+
+                .filter(v ->
+                        (v.getPlaca() != null && v.getPlaca().toLowerCase().contains(texto)) ||
+                                (v.getMarca() != null && v.getMarca().toLowerCase().contains(texto)) ||
+                                (v.getModelo() != null && v.getModelo().toLowerCase().contains(texto)) ||
+                                (v.getColor() != null && v.getColor().toLowerCase().contains(texto)) ||
+                                (v.getTipo() != null && v.getTipo().toString().toLowerCase().contains(texto))
+                )
+                .toList();
+    }
+
 }
