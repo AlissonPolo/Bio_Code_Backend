@@ -43,6 +43,10 @@ public class ParqueaderoVehiculo {
     @Column(name = "fecha_salida")
     private Instant fechaSalida;
 
+    @Column(name = "correo_electronico", length = 120)
+    private String correoElectronico;
+
+
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
 
@@ -68,6 +72,7 @@ public class ParqueaderoVehiculo {
     public void preUpdate() {
         this.actualizadoEn = Instant.now();
     }
+
 
     public Long getId() {
         return id;
@@ -136,6 +141,20 @@ public class ParqueaderoVehiculo {
     public Instant getActualizadoEn() {
         return actualizadoEn;
     }
+
+    public String getCorreoElectronico() {
+        return correoElectronico;
+    }
+
+    public void setCorreoElectronico(String correoElectronico) {
+        this.correoElectronico = correoElectronico;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+
 
     public boolean estaParqueado() {
         return this.fechaSalida == null;

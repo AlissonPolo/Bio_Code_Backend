@@ -3,6 +3,7 @@ package com.example.Bio_Code.controlador;
 import com.example.Bio_Code.dto.ApiResponse;
 import com.example.Bio_Code.dto.ParqueaderoVehiculoDTO;
 import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
+import com.example.Bio_Code.servicios.EmailService;
 import com.example.Bio_Code.servicios.IParqueaderoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,10 @@ public class ParqueaderoController {
 
     @Autowired
     private IParqueaderoService parqueaderoService;
+
+    @Autowired
+    private EmailService emailService;
+
 
     @GetMapping("/hoy")
     public ResponseEntity<ApiResponse<List<ParqueaderoVehiculoDTO>>> obtenerPorFechaHoy() {
@@ -97,9 +102,11 @@ public class ParqueaderoController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<ParqueaderoVehiculoDTO>> crear(@Valid @RequestBody ParqueaderoVehiculoDTO vehiculoDTO) {
+
         try {
             ParqueaderoVehiculo vehiculo = convertirAEntidad(vehiculoDTO);
             ParqueaderoVehiculo vehiculoCreado = parqueaderoService.crear(vehiculo);
+
             ParqueaderoVehiculoDTO vehiculoCreadoDTO = convertirADTO(vehiculoCreado);
             
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -201,11 +208,18 @@ public class ParqueaderoController {
         dto.setFechaSalida(vehiculo.getFechaSalida());
         dto.setCreadoEn(vehiculo.getCreadoEn());
         dto.setActualizadoEn(vehiculo.getActualizadoEn());
+        dto.setCorreoElectronico(vehiculo.getCorreoElectronico());
         return dto;
     }
 
     private ParqueaderoVehiculo convertirAEntidad(ParqueaderoVehiculoDTO dto) {
+
+        System.out.println("📥 [LOG 1] DTO recibido del FRONT:");
+        System.out.println("Placa: " + dto.getPlaca());
+        System.out.println("Correo recibido: " + dto.getCorreoElectronico());
+
         ParqueaderoVehiculo vehiculo = new ParqueaderoVehiculo();
+        vehiculo.setId(dto.getId());
         vehiculo.setPlaca(dto.getPlaca());
         vehiculo.setTipo(dto.getTipo());
         vehiculo.setMarca(dto.getMarca());
@@ -213,6 +227,8 @@ public class ParqueaderoController {
         vehiculo.setColor(dto.getColor());
         vehiculo.setFechaEntrada(dto.getFechaEntrada());
         vehiculo.setFechaSalida(dto.getFechaSalida());
+        vehiculo.setCorreoElectronico(dto.getCorreoElectronico());
+
         return vehiculo;
     }
 }
