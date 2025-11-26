@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,20 +23,26 @@ public class ParqueaderoController {
     @Autowired
     private IParqueaderoService parqueaderoService;
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<ParqueaderoVehiculoDTO>>> obtenerTodos() {
+    @GetMapping("/hoy")
+    public ResponseEntity<ApiResponse<List<ParqueaderoVehiculoDTO>>> obtenerPorFechaHoy() {
         try {
-            List<ParqueaderoVehiculo> vehiculos = parqueaderoService.listarTodos();
+            List<ParqueaderoVehiculo> vehiculos = parqueaderoService.listarPorFechaHoy();
+
             List<ParqueaderoVehiculoDTO> vehiculosDTO = vehiculos.stream()
                     .map(this::convertirADTO)
                     .collect(Collectors.toList());
-            
-            return ResponseEntity.ok(ApiResponse.success("Vehículos obtenidos exitosamente", vehiculosDTO));
+
+            return ResponseEntity.ok(
+                    ApiResponse.success("Vehículos del día obtenidos exitosamente", vehiculosDTO)
+            );
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Error al obtener los vehículos", e.getMessage()));
+                    .body(ApiResponse.error("Error al obtener los vehículos del día", e.getMessage()));
         }
     }
+
+
 
     @GetMapping("/parqueados")
     public ResponseEntity<ApiResponse<List<ParqueaderoVehiculoDTO>>> obtenerVehiculosParqueados() {
@@ -126,6 +133,28 @@ public class ParqueaderoController {
                     .body(ApiResponse.error("Error al actualizar el vehículo", e.getMessage()));
         }
     }
+
+    @PatchMapping("/{id}/ingreso")
+    public ResponseEntity<ApiResponse<ParqueaderoVehiculoDTO>> marcarIngreso(@PathVariable Long id) {
+        try {
+            // Llamamos al servicio para registrar la entrada
+            ParqueaderoVehiculo vehiculo = parqueaderoService.marcarIngreso(id);
+            ParqueaderoVehiculoDTO vehiculoDTO = convertirADTO(vehiculo);
+
+            return ResponseEntity.ok(ApiResponse.success("Ingreso registrado exitosamente", vehiculoDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Datos inválidos", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.error("Conflicto", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al marcar el ingreso", e.getMessage()));
+        }
+    }
+
+
 
     @PatchMapping("/{id}/salida")
     public ResponseEntity<ApiResponse<ParqueaderoVehiculoDTO>> marcarSalida(@PathVariable Long id) {

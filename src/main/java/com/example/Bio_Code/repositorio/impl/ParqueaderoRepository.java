@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,7 @@ public interface ParqueaderoRepository extends JpaRepository<ParqueaderoVehiculo
     // Verificar si existe un vehículo parqueado con esa placa
     @Query("SELECT COUNT(p) > 0 FROM ParqueaderoVehiculo p WHERE UPPER(p.placa) = UPPER(:placa) AND p.fechaSalida IS NULL")
     boolean existeVehiculoParqueadoConPlaca(@Param("placa") String placa);
+
+    @Query("SELECT v FROM ParqueaderoVehiculo v " + "WHERE v.fechaEntrada BETWEEN :inicio AND :fin " + "AND v.fechaSalida IS NULL " + "AND v.actualizadoEn <> v.creadoEn")
+    List<ParqueaderoVehiculo> listarPorFecha(@Param("inicio") Instant inicio, @Param("fin") Instant fin);
 }

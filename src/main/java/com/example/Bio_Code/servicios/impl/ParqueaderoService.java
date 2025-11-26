@@ -6,8 +6,11 @@ import com.example.Bio_Code.servicios.EmailService;
 import com.example.Bio_Code.servicios.IParqueaderoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +105,20 @@ public class ParqueaderoService implements IParqueaderoService {
     }
 
     @Override
+    public List<ParqueaderoVehiculo> listarPorFecha(LocalDate fecha) {
+        Instant inicio = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant fin = fecha.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        return parqueaderoRepository.listarPorFecha(inicio, fin);
+    }
+
+    @Override
+    public List<ParqueaderoVehiculo> listarPorFechaHoy() {
+        return listarPorFecha(LocalDate.now());
+    }
+
+
+    @Override
     public void eliminar(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("El ID no puede ser nulo");
@@ -126,6 +143,21 @@ public class ParqueaderoService implements IParqueaderoService {
         }
         
         vehiculo.setFechaSalida(Instant.now());
+        return parqueaderoRepository.save(vehiculo);
+    }
+    public ParqueaderoVehiculo marcarIngreso(Long id) {
+        Optional<ParqueaderoVehiculo> vehiculoOpt = parqueaderoRepository.findById(id);
+        if (vehiculoOpt.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró el vehículo con ID: " + id);
+        }
+
+        ParqueaderoVehiculo vehiculo = vehiculoOpt.get();
+        if (vehiculo.getFechaEntrada() != null && vehiculo.getFechaSalida() == null) {
+            throw new IllegalStateException("El vehículo ya tiene registrado un ingreso y no ha salido");
+        }
+
+        vehiculo.setFechaEntrada(Instant.now());
+        vehiculo.setFechaSalida(null); // Por si se estaba reseteando un ingreso anterior
         return parqueaderoRepository.save(vehiculo);
     }
 

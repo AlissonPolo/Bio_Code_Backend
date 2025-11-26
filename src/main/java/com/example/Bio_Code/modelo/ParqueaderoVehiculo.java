@@ -37,7 +37,7 @@ public class ParqueaderoVehiculo {
     @Column(length = 30)
     private String color;
 
-    @Column(name = "fecha_entrada", nullable = false)
+    @Column(name = "fecha_entrada", nullable = true)
     private Instant fechaEntrada;
 
     @Column(name = "fecha_salida")
@@ -60,9 +60,6 @@ public class ParqueaderoVehiculo {
     @PrePersist
     public void prePersist() {
         Instant ahora = Instant.now();
-        if (this.fechaEntrada == null) {
-            this.fechaEntrada = ahora;
-        }
         this.creadoEn = ahora;
         this.actualizadoEn = ahora;
     }
