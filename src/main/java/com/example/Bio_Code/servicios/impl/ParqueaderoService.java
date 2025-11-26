@@ -6,8 +6,11 @@ import com.example.Bio_Code.servicios.EmailService;
 import com.example.Bio_Code.servicios.IParqueaderoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +25,10 @@ public class ParqueaderoService implements IParqueaderoService {
 
     @Override
     public ParqueaderoVehiculo crear(ParqueaderoVehiculo vehiculo) {
+        System.out.println("📤 [LOG 2] Vehículo recibido en SERVICE antes de guardar:");
+        System.out.println("Placa: " + vehiculo.getPlaca());
+        System.out.println("Correo: " + vehiculo.getCorreoElectronico());
+
         if (vehiculo == null) {
             throw new IllegalArgumentException("El vehículo no puede ser nulo");
         }
@@ -41,6 +48,11 @@ public class ParqueaderoService implements IParqueaderoService {
         vehiculo.setPlaca(vehiculo.getPlaca().trim().toUpperCase());
         
         ParqueaderoVehiculo vehiculoCreado = parqueaderoRepository.save(vehiculo);
+
+
+        System.out.println("💾 [LOG 3] Vehículo GUARDADO en BD:");
+        System.out.println("ID: " + vehiculoCreado.getId());
+        System.out.println("Correo guardado: " + vehiculoCreado.getCorreoElectronico());
         
         // Enviar notificación por correo después de crear el vehículo
         SendingEmail(vehiculoCreado);
@@ -74,32 +86,54 @@ public class ParqueaderoService implements IParqueaderoService {
         if (id == null) {
             throw new IllegalArgumentException("El ID no puede ser nulo");
         }
-        
-        Optional<ParqueaderoVehiculo> vehiculoExistente = parqueaderoRepository.findById(id);
-        if (vehiculoExistente.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró el vehículo con ID: " + id);
-        }
-        
-        ParqueaderoVehiculo vehiculoAActualizar = vehiculoExistente.get();
-        
+
+        ParqueaderoVehiculo vehiculoAActualizar = parqueaderoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el vehículo con ID: " + id));
+
+        // Actualizar campos si vienen del DTO
         if (vehiculo.getMarca() != null) {
             vehiculoAActualizar.setMarca(vehiculo.getMarca().trim());
         }
-        
+
         if (vehiculo.getModelo() != null) {
             vehiculoAActualizar.setModelo(vehiculo.getModelo().trim());
         }
-        
+
         if (vehiculo.getColor() != null) {
             vehiculoAActualizar.setColor(vehiculo.getColor().trim());
         }
-        
+
         if (vehiculo.getFechaSalida() != null) {
             vehiculoAActualizar.setFechaSalida(vehiculo.getFechaSalida());
         }
-        
-        return parqueaderoRepository.save(vehiculoAActualizar);
+
+        // 🔥🔥🔥 IMPORTANTE: actualizar correo
+        if (vehiculo.getCorreoElectronico() != null) {
+            vehiculoAActualizar.setCorreoElectronico(vehiculo.getCorreoElectronico().trim());
+        }
+
+        ParqueaderoVehiculo actualizado = parqueaderoRepository.save(vehiculoAActualizar);
+
+        // 🔥🔥🔥 OPCIONAL: enviar correo si quieres notificar el cambio
+        // SendingEmail(actualizado);
+
+        return actualizado;
     }
+
+
+    @Override
+    public List<ParqueaderoVehiculo> listarPorFecha(LocalDate fecha) {
+        Instant inicio = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant fin = fecha.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        return parqueaderoRepository.listarPorFecha(inicio, fin);
+    }
+
+    @Override
+    public List<ParqueaderoVehiculo> listarPorFechaHoy() {
+        return listarPorFecha(LocalDate.now());
+    }
+
 
     @Override
     public void eliminar(Long id) {
@@ -126,6 +160,21 @@ public class ParqueaderoService implements IParqueaderoService {
         }
         
         vehiculo.setFechaSalida(Instant.now());
+        return parqueaderoRepository.save(vehiculo);
+    }
+    public ParqueaderoVehiculo marcarIngreso(Long id) {
+        Optional<ParqueaderoVehiculo> vehiculoOpt = parqueaderoRepository.findById(id);
+        if (vehiculoOpt.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró el vehículo con ID: " + id);
+        }
+
+        ParqueaderoVehiculo vehiculo = vehiculoOpt.get();
+        if (vehiculo.getFechaEntrada() != null && vehiculo.getFechaSalida() == null) {
+            throw new IllegalStateException("El vehículo ya tiene registrado un ingreso y no ha salido");
+        }
+
+        vehiculo.setFechaEntrada(Instant.now());
+        vehiculo.setFechaSalida(null); // Por si se estaba reseteando un ingreso anterior
         return parqueaderoRepository.save(vehiculo);
     }
 

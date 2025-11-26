@@ -37,11 +37,15 @@ public class ParqueaderoVehiculo {
     @Column(length = 30)
     private String color;
 
-    @Column(name = "fecha_entrada", nullable = false)
+    @Column(name = "fecha_entrada", nullable = true)
     private Instant fechaEntrada;
 
     @Column(name = "fecha_salida")
     private Instant fechaSalida;
+
+    @Column(name = "correo_electronico", length = 120)
+    private String correoElectronico;
+
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
@@ -60,9 +64,6 @@ public class ParqueaderoVehiculo {
     @PrePersist
     public void prePersist() {
         Instant ahora = Instant.now();
-        if (this.fechaEntrada == null) {
-            this.fechaEntrada = ahora;
-        }
         this.creadoEn = ahora;
         this.actualizadoEn = ahora;
     }
@@ -71,6 +72,7 @@ public class ParqueaderoVehiculo {
     public void preUpdate() {
         this.actualizadoEn = Instant.now();
     }
+
 
     public Long getId() {
         return id;
@@ -139,6 +141,20 @@ public class ParqueaderoVehiculo {
     public Instant getActualizadoEn() {
         return actualizadoEn;
     }
+
+    public String getCorreoElectronico() {
+        return correoElectronico;
+    }
+
+    public void setCorreoElectronico(String correoElectronico) {
+        this.correoElectronico = correoElectronico;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+
 
     public boolean estaParqueado() {
         return this.fechaSalida == null;
