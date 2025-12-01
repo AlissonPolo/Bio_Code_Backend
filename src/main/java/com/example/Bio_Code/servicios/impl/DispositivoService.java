@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,24 @@ public class DispositivoService implements IDispositivoService {
     public List<Dispositivo> listarTodos() {
         return dispositivoRepository.findAll();
     }
+
+    public List<Dispositivo> listarDia(LocalDate fecha) {
+        Instant inicio = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant fin = fecha.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        return dispositivoRepository.listarDia(inicio, fin);
+    }
+
+    public List<Dispositivo> listarPorFechaHoy() {
+        return listarDia(LocalDate.now());
+    }
+
+    public List<Dispositivo> listarDia() {
+        return listarDia(LocalDate.now());
+    }
+
+
+
 
     @Override
     public Dispositivo actualizar(Long id, Dispositivo dispositivo) {

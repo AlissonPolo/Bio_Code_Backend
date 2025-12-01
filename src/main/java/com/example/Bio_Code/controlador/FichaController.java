@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/fichas")
+@RequestMapping("usuarios/fichas")
 @CrossOrigin(origins = "http://localhost:4200") // ajusta si tu frontend está en otro puerto
 public class FichaController {
 
@@ -31,7 +31,7 @@ public class FichaController {
     }
     @Autowired
     private TipoDocumentoRepository repo;
-    @GetMapping("/tipos-documento")
+    @GetMapping("/tiposDocumento")
     public List<Tipo_documento> getTiposDocumento() {
         return repo.findAll();
     }

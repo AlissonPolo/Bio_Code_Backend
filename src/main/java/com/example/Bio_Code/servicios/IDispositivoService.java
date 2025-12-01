@@ -44,6 +44,9 @@ public interface IDispositivoService {
     List<Dispositivo> buscarConFiltros(String nombre, Dispositivo.TipoDispositivo tipo, 
                                       Dispositivo.EstadoDispositivo estado, String ubicacion, 
                                       String responsable);
+    //registro diario
+    List<Dispositivo> listarDia();
+
 }
 
 

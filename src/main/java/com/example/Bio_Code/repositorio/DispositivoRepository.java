@@ -85,6 +85,15 @@ public interface DispositivoRepository extends JpaRepository<Dispositivo, Long> 
         @Param("ubicacion") String ubicacion,
         @Param("responsable") String responsable
     );
+
+    @Query("SELECT d FROM Dispositivo d " +
+            "WHERE d.actualizadoEn BETWEEN :inicio AND :fin " +
+            "AND d.fechaAdquisicion IS NULL")
+    List<Dispositivo> listarDia(
+            @Param("inicio") Instant inicio,
+            @Param("fin") Instant fin
+    );
+
 }
 
 

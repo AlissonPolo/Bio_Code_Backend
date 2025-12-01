@@ -48,6 +48,23 @@ public class DispositivosController {
         }
     }
 
+    @GetMapping("/consultaDia")
+    public ResponseEntity<ApiResponse<List<DispositivoDTO>>> obtenerDiario() {
+        try {
+            List<Dispositivo> dispositivos = dispositivoService.listarDia();
+            List<DispositivoDTO> dispositivosDTO = dispositivos.stream()
+                    .map(this::convertirADTO)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponse.success("Dispositivos obtenidos exitosamente", dispositivosDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener los dispositivos", e.getMessage()));
+        }
+    }
+
+
+
     @GetMapping("/numero-serie/{numeroSerie}")
     public ResponseEntity<ApiResponse<DispositivoDTO>> obtenerPorNumeroSerie(@PathVariable String numeroSerie) {
         try {

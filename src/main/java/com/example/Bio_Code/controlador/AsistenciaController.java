@@ -42,7 +42,7 @@ public class AsistenciaController {
 
 
     @Transactional
-    @PutMapping("/marcarEstancia/{idPersona}")
+    @PutMapping("/asistencias/marcarEstancia/{idPersona}")
     public ResponseEntity<Control_Asistencia> actualizarEstancia(
             @PathVariable int idPersona,
             @RequestBody Control_Asistencia asistenciaActualizada) {
@@ -71,7 +71,7 @@ public class AsistenciaController {
         return ResponseEntity.ok(asistencia);
     }
 
-    @PostMapping("/CrearAsistencia")
+    @PostMapping("/asistencias/CrearAsistencia")
     public ResponseEntity<Control_Asistencia> crearAsistencia(@RequestBody Control_Asistencia nuevaAsistencia) {
         Control_Asistencia asistenciaGuardada = asistenciaRepository.save(nuevaAsistencia);
         return new ResponseEntity<>(asistenciaGuardada, HttpStatus.CREATED);
