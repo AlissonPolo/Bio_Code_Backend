@@ -25,7 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@CrossOrigin(origins = {"http://localhost:4200", "https://biocode-production.up.railway.app"}, allowCredentials = "true")
+//@CrossOrigin(origins = {"http://localhost:4200", "https://biocode-production.up.railway.app"}, allowCredentials = "true")
 @RestController
 
 public class AsistenciaController {

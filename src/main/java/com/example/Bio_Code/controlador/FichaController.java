@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("usuarios/fichas")
-@CrossOrigin(origins = {"http://localhost:4200", "https://biocode-production.up.railway.app"}, allowCredentials = "true")
+//@CrossOrigin(origins = {"http://localhost:4200", "https://biocode-production.up.railway.app"}, allowCredentials = "true")
 public class FichaController {
 
     @Autowired
