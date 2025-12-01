@@ -70,7 +70,7 @@ public class UsuarioController {
 
 
 
-    @PostMapping("/usuariosCrear")
+    @PostMapping("usuarios/usuariosCrear")
     public Persona crearUsuario(@RequestBody PersonaDTO dto) {
         Persona persona = new Persona();
         persona.setNombres(dto.nombres);
@@ -125,17 +125,17 @@ public class UsuarioController {
         }
     }
     // Listar todas las competencias
-    @GetMapping("/ficha")
+    @GetMapping("/usuarios/ficha")
     public List<Ficha> listarFicha() {
         return fichaRepository.findAll();
     }
 
-    @PutMapping("/usuariActualizar/{id}")
+    @PutMapping("usuarios/usuariActualizar/{id}")
     public Persona actualizarUsuario(@PathVariable Integer id, @RequestBody PersonaDTO dto) {
         Persona persona = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Persona con ID " + id + " no encontrada"));
 
-        // Actualizar campos básicos
+        // Actualizar campos básicosx
         persona.setNombres(dto.nombres);
         persona.setApellidos(dto.apellidos);
         persona.setNo_documento(dto.no_documento);
@@ -176,7 +176,7 @@ public class UsuarioController {
         return usuarioRepository.save(persona);
     }
 
-        @PutMapping("/inhabilitarPersona/{id}")
+        @PutMapping("usuarios/inhabilitarPersona/{id}")
         public ResponseEntity<?> inhabilitarPersona(@PathVariable Integer id) {
             Optional<Persona> personaOpt = usuarioRepository.findById(id);
 
