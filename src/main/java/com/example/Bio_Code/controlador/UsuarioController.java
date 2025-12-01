@@ -27,7 +27,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:4200")  // permite Angular local
+@CrossOrigin(origins = {"http://localhost:4200", "https://biocode-production.up.railway.app"}, allowCredentials = "true")
 @RestController
 public class UsuarioController {
     @Autowired
