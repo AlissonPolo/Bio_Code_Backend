@@ -13,14 +13,11 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // aplica a todas las rutas
-                        .allowedOrigins(
-                                "http://localhost:4200", // Angular local
-                                "https://biocode-production.up.railway.app" // frontend en producción
-                        )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // incluye OPTIONS para preflight
-                        .allowedHeaders("*") // permite todos los headers
-                        .allowCredentials(true); // necesario si usas cookies
+                registry.addMapping("/**") // todas las rutas
+                        .allowedOrigins("https://biocode-production.up.railway.app")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // necesario si envías cookies
             }
         };
     }
