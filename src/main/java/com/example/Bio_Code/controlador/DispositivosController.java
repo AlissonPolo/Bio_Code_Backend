@@ -1,10 +1,8 @@
 package com.example.Bio_Code.controlador;
 
-import com.example.Bio_Code.dto.ApiResponse;
-import com.example.Bio_Code.dto.DispositivoDTO;
-import com.example.Bio_Code.dto.DispositivoFiltroDTO;
-import com.example.Bio_Code.dto.EstadisticasDispositivosDTO;
+import com.example.Bio_Code.dto.*;
 import com.example.Bio_Code.modelo.Dispositivo;
+import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
 import com.example.Bio_Code.servicios.IDispositivoService;
 import com.example.Bio_Code.servicios.DispositivoPdfService;
 import jakarta.validation.Valid;
@@ -235,6 +233,25 @@ public class DispositivosController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("conflicto", e.getMessage()));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Error al marcar ingreso",e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/salida")
+    public ResponseEntity<ApiResponse<DispositivoDTO>> marcarSalida(@PathVariable Long id) {
+        try {
+            Dispositivo dispositivo = dispositivoService.marcarSalida(id);
+            DispositivoDTO dispositivoDTO = convertirADTO(dispositivo);
+
+            return ResponseEntity.ok(ApiResponse.success("Salida registrada exitosamente", dispositivoDTO));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Datos inválidos", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.error("Conflicto", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al marcar la salida", e.getMessage()));
         }
     }
 

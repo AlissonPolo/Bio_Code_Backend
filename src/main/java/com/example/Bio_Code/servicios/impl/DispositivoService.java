@@ -1,6 +1,7 @@
 package com.example.Bio_Code.servicios.impl;
 
 import com.example.Bio_Code.modelo.Dispositivo;
+import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
 import com.example.Bio_Code.repositorio.DispositivoRepository;
 import com.example.Bio_Code.servicios.IDispositivoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +113,20 @@ public class DispositivoService implements IDispositivoService {
         dispositivo1.setFechaAdquisicion(null);
         return dispositivoRepository.save(dispositivo1);
    }
+    public Dispositivo marcarSalida(Long id) {
+        Optional<Dispositivo> dispositivo = dispositivoRepository.findById(id);
+        if (dispositivo.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró el dispositivo con ID: " + id);
+        }
+
+        Dispositivo dispositivo1 = dispositivo.get();
+        if (dispositivo1.getFechaAdquisicion() != null) {
+            throw new IllegalStateException("El dispositivo ya tiene registrada su salida");
+        }
+
+        dispositivo1.setFechaAdquisicion(Instant.now());
+        return dispositivoRepository.save(dispositivo1);
+    }
 
 
     @Override

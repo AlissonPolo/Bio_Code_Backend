@@ -1,6 +1,8 @@
 package com.example.Bio_Code.servicios;
 
 import com.example.Bio_Code.modelo.Dispositivo;
+import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,8 @@ public interface IDispositivoService {
     List<Dispositivo> buscarPorResponsable(String responsable);
     List<Dispositivo> buscarPorMarca(String marca);
     Dispositivo marcarIngreso(Long id);
-    
+    Dispositivo marcarSalida(Long id);
+
     // Operaciones especiales
     List<Dispositivo> obtenerDispositivosActivos();
     List<Dispositivo> obtenerDispositivosQueRequierenMantenimiento();
