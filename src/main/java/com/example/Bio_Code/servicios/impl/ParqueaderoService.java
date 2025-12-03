@@ -169,9 +169,6 @@ public class ParqueaderoService implements IParqueaderoService {
         }
 
         ParqueaderoVehiculo vehiculo = vehiculoOpt.get();
-        if (vehiculo.getFechaEntrada() != null && vehiculo.getFechaSalida() == null) {
-            throw new IllegalStateException("El vehículo ya tiene registrado un ingreso y no ha salido");
-        }
 
         vehiculo.setFechaEntrada(Instant.now());
         vehiculo.setFechaSalida(null); // Por si se estaba reseteando un ingreso anterior

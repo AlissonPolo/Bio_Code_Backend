@@ -106,9 +106,6 @@ public class DispositivoService implements IDispositivoService {
             throw new IllegalArgumentException("No se encontrp el dispositivo con ID:"+id);
         }
         Dispositivo dispositivo1  = dispositivo.get();
-        if (dispositivo1.getActualizadoEn() != null && dispositivo1.getFechaAdquisicion()==null){
-            throw new IllegalStateException("El dispositivo ya tiene registrado y no ha salido");
-        }
         dispositivo1.setActualizadoEn(Instant.now());
         dispositivo1.setFechaAdquisicion(null);
         return dispositivoRepository.save(dispositivo1);
