@@ -88,7 +88,8 @@ public interface DispositivoRepository extends JpaRepository<Dispositivo, Long> 
 
     @Query("SELECT d FROM Dispositivo d " +
             "WHERE d.actualizadoEn BETWEEN :inicio AND :fin " +
-            "AND d.fechaAdquisicion IS NULL")
+            "AND d.fechaAdquisicion IS NULL " +
+            "AND d.actualizadoEn <> d.creadoEn")
     List<Dispositivo> listarDia(
             @Param("inicio") Instant inicio,
             @Param("fin") Instant fin
