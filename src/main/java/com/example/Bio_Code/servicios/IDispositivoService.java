@@ -14,7 +14,8 @@ public interface IDispositivoService {
     List<Dispositivo> listarTodos();
     Dispositivo actualizar(Long id, Dispositivo dispositivo);
     void eliminar(Long id);
-    
+
+
     // Búsquedas específicas
     Optional<Dispositivo> obtenerPorNumeroSerie(String numeroSerie);
     Optional<Dispositivo> obtenerPorCodigoInventario(String codigoInventario);
@@ -24,6 +25,7 @@ public interface IDispositivoService {
     List<Dispositivo> buscarPorUbicacion(String ubicacion);
     List<Dispositivo> buscarPorResponsable(String responsable);
     List<Dispositivo> buscarPorMarca(String marca);
+    Dispositivo marcarIngreso(Long id);
     
     // Operaciones especiales
     List<Dispositivo> obtenerDispositivosActivos();

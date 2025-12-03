@@ -185,6 +185,10 @@ public class Dispositivo {
         return actualizadoEn;
     }
 
+    public void setActualizadoEn(Instant actualizadoEn) {
+        this.actualizadoEn = actualizadoEn;
+    }
+
     public boolean requiereMantenimiento() {
         if (fechaUltimoMantenimiento == null) {
             return true;

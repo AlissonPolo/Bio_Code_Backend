@@ -64,7 +64,6 @@ public class DispositivosController {
     }
 
 
-
     @GetMapping("/numero-serie/{numeroSerie}")
     public ResponseEntity<ApiResponse<DispositivoDTO>> obtenerPorNumeroSerie(@PathVariable String numeroSerie) {
         try {
@@ -221,6 +220,21 @@ public class DispositivosController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error al obtener el dispositivo", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/ingreso_dispositivo")
+    public ResponseEntity<ApiResponse<DispositivoDTO>>ingresoDispositivo(@PathVariable Long id){
+        try {
+            Dispositivo dispositivo = dispositivoService.marcarIngreso(id);
+            DispositivoDTO dispositivoDTO = convertirADTO(dispositivo);
+            return ResponseEntity.ok(ApiResponse.success("Ingreso registrado exitosamente", dispositivoDTO));
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Datos invalidos", e.getMessage()));
+        }catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("conflicto", e.getMessage()));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Error al marcar ingreso",e.getMessage()));
         }
     }
 
