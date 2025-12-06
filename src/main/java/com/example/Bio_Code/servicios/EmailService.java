@@ -13,7 +13,7 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    @Value("${RESEND_API_KEY}")
+    @Value("${resend.api.key}")
     private String apiKey;
 
     @Value("${parqueadero.email.from}")
@@ -33,7 +33,7 @@ public class EmailService {
                     .from(emailFrom)
                     .to(vehiculo.getCorreoElectronico())
                     .subject(emailSubject)
-                    .html(generarContenidoHTML(vehiculo))   // 🔥 TU HTML COMPLETO SIN CAMBIOS
+                    .html(generarContenidoHTML(vehiculo))
                     .build();
 
             resend.emails().send(emailRequest);
