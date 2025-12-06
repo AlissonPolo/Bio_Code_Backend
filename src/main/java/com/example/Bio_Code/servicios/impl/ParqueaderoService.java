@@ -53,10 +53,11 @@ public class ParqueaderoService implements IParqueaderoService {
         System.out.println("💾 [LOG 3] Vehículo GUARDADO en BD:");
         System.out.println("ID: " + vehiculoCreado.getId());
         System.out.println("Correo guardado: " + vehiculoCreado.getCorreoElectronico());
-        
+        System.out.println("📮 ENVIANDO CORREO... (ANTES DE mailSender.send)");
         // Enviar notificación por correo después de crear el vehículo
         SendingEmail(vehiculoCreado);
-        
+        System.out.println("📨 CORREO ENVIADO (DESPUÉS DE mailSender.send)");
+
         return vehiculoCreado;
     }
 

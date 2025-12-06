@@ -26,29 +26,46 @@ public class EmailService {
     private String emailSubject;
 
     public void enviarNotificacionNuevoVehiculo(ParqueaderoVehiculo vehiculo) {
-        System.out.println("📧 [LOG] Enviando correo a: " + vehiculo.getCorreoElectronico());
+
+        System.out.println("📧 [LOG] Procesando envío de correo...");
+        System.out.println("📧 [LOG] Destinatario: " + vehiculo.getCorreoElectronico());
 
         try {
             enviarCorreoHTML(vehiculo);
-            logger.info("Correo enviado exitosamente para el vehículo con placa: {}", vehiculo.getPlaca());
+            logger.info("✅ Correo enviado exitosamente para el vehículo con placa: {}", vehiculo.getPlaca());
         } catch (Exception e) {
-            logger.error("Error al enviar correo para el vehículo con placa: {}. Error: {}",
-                    vehiculo.getPlaca(), e.getMessage());
+            logger.error("❌ Error al enviar correo para la placa {}: {}", vehiculo.getPlaca(), e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private void enviarCorreoHTML(ParqueaderoVehiculo vehiculo) throws MessagingException {
+
+        System.out.println("📨 [LOG] Creando objeto MimeMessage...");
+
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setFrom(emailFrom);
         helper.setTo(vehiculo.getCorreoElectronico());
+
         // Forzar UTF-8 en el asunto
-        helper.setSubject(new String(emailSubject.getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                java.nio.charset.StandardCharsets.UTF_8));
+        helper.setSubject(new String(
+                emailSubject.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                java.nio.charset.StandardCharsets.UTF_8
+        ));
 
         helper.setText(generarContenidoHTML(vehiculo), true);
-        mailSender.send(message);
+
+        System.out.println("🚀 [LOG] Ejecutando mailSender.send()...");
+
+        try {
+            mailSender.send(message);
+            System.out.println("✅ [LOG] Gmail aceptó el correo (mailSender.send() completado).");
+        } catch (Exception e) {
+            System.out.println("❌ [LOG] Error en mailSender.send(): " + e.getMessage());
+            throw e; // se vuelve a lanzar para que el servicio superior lo registre también
+        }
     }
 
     private String generarContenidoHTML(ParqueaderoVehiculo vehiculo) {
