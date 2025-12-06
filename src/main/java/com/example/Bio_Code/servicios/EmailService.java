@@ -1,12 +1,9 @@
 package com.example.Bio_Code.servicios;
 
 import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.resend.Resend;
+import com.resend.services.emails.model.SendEmailRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +13,8 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${RESEND_API_KEY}")
+    private String apiKey;
 
     @Value("${parqueadero.email.from}")
     private String emailFrom;
@@ -26,29 +23,26 @@ public class EmailService {
     private String emailSubject;
 
     public void enviarNotificacionNuevoVehiculo(ParqueaderoVehiculo vehiculo) {
-        System.out.println("📧 [LOG] Enviando correo a: " + vehiculo.getCorreoElectronico());
+
+        logger.info("📧 Enviando correo a: {}", vehiculo.getCorreoElectronico());
 
         try {
-            enviarCorreoHTML(vehiculo);
+            Resend resend = new Resend(apiKey);
+
+            SendEmailRequest emailRequest = SendEmailRequest.builder()
+                    .from(emailFrom)
+                    .to(vehiculo.getCorreoElectronico())
+                    .subject(emailSubject)
+                    .html(generarContenidoHTML(vehiculo))   // 🔥 TU HTML COMPLETO SIN CAMBIOS
+                    .build();
+
+            resend.emails().send(emailRequest);
+
             logger.info("Correo enviado exitosamente para el vehículo con placa: {}", vehiculo.getPlaca());
+
         } catch (Exception e) {
-            logger.error("Error al enviar correo para el vehículo con placa: {}. Error: {}",
-                    vehiculo.getPlaca(), e.getMessage());
+            logger.error("❌ Error al enviar correo: {}", e.getMessage());
         }
-    }
-
-    private void enviarCorreoHTML(ParqueaderoVehiculo vehiculo) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        helper.setFrom(emailFrom);
-        helper.setTo(vehiculo.getCorreoElectronico());
-        // Forzar UTF-8 en el asunto
-        helper.setSubject(new String(emailSubject.getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                java.nio.charset.StandardCharsets.UTF_8));
-
-        helper.setText(generarContenidoHTML(vehiculo), true);
-        mailSender.send(message);
     }
 
     private String generarContenidoHTML(ParqueaderoVehiculo vehiculo) {
@@ -108,8 +102,4 @@ public class EmailService {
                 vehiculo.getColor() != null ? vehiculo.getColor() : "No especificado"
         );
     }
-
-
-
-
 }
