@@ -1,11 +1,13 @@
 package com.example.Bio_Code.servicios;
 
 import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
-import com.resend.Resend;
-import com.resend.services.emails.model.SendEmailRequest;
-import com.resend.services.emails.model.SendEmailResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -19,23 +21,48 @@ public class EmailService {
     @Value("${parqueadero.email.subject}")
     private String emailSubject;
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
     public void enviarNotificacionNuevoVehiculo(ParqueaderoVehiculo vehiculo) {
+        System.out.println("📮 ENVIANDO CORREO...");
         System.out.println("RESEND_API_KEY: " + resendApiKey);
         System.out.println("EMAIL FROM: " + emailFrom);
-        System.out.println("EMAIL SUBJECT: " + emailSubject);
-        Resend resend = new Resend(resendApiKey);
-        SendEmailRequest request = SendEmailRequest.builder()
-                .from(emailFrom)  // Ej: "onboarding@resend.dev"
-                .to(vehiculo.getCorreoElectronico())
-                .subject(emailSubject)
-                .html(generarContenidoHTML(vehiculo))
-                .build();
+        System.out.println("EMAIL TO: " + vehiculo.getCorreoElectronico());
 
         try {
-            SendEmailResponse response = resend.emails().send(request);
-            System.out.println("✉️ CORREO ENVIADO ✔ ID: " + response.getId());
+            // Preparar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + resendApiKey);
+
+            // Preparar body
+            Map<String, Object> body = new HashMap<>();
+            body.put("from", emailFrom);
+            body.put("to", new String[]{vehiculo.getCorreoElectronico()});
+            body.put("subject", emailSubject);
+            body.put("html", generarContenidoHTML(vehiculo));
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+            // Hacer la petición
+            ResponseEntity<String> response = restTemplate.exchange(
+                    "https://api.resend.com/emails",
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                System.out.println("✉️ CORREO ENVIADO EXITOSAMENTE ✔");
+                System.out.println("Response: " + response.getBody());
+            } else {
+                System.out.println("⚠️ RESPUESTA INESPERADA: " + response.getStatusCode());
+                System.out.println("Body: " + response.getBody());
+            }
+
         } catch (Exception e) {
             System.out.println("❌ ERROR AL ENVIAR CORREO: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
