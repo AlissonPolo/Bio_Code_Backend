@@ -22,4 +22,3 @@ ENV DB_USERNAME=""
 ENV DB_PASSWORD=""
 
 CMD ["java", "-jar", "app.jar"]
-//
