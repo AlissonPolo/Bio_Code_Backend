@@ -1,9 +1,8 @@
 # Etapa de build
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn -DskipTests clean package \
+COPY . .
+RUN mvn -B -DskipTests clean package \
     && cp target/*.jar app.jar
 
 # Etapa de runtime
