@@ -20,9 +20,10 @@ public class EmailService {
     private String emailSubject;
 
     public void enviarNotificacionNuevoVehiculo(ParqueaderoVehiculo vehiculo) {
-
+        System.out.println("RESEND_API_KEY: " + resendApiKey);
+        System.out.println("EMAIL FROM: " + emailFrom);
+        System.out.println("EMAIL SUBJECT: " + emailSubject);
         Resend resend = new Resend(resendApiKey);
-
         SendEmailRequest request = SendEmailRequest.builder()
                 .from(emailFrom)  // Ej: "onboarding@resend.dev"
                 .to(vehiculo.getCorreoElectronico())

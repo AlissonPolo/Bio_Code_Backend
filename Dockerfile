@@ -13,4 +13,4 @@ COPY --from=build /app/app.jar app.jar
 EXPOSE 8080
 ENV PORT=8080
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Dlogging.level.root=DEBUG", "-jar", "app.jar"]
