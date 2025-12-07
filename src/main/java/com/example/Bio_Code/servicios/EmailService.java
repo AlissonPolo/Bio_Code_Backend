@@ -1,6 +1,70 @@
 package com.example.Bio_Code.servicios;
 
 import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
+import com.resend.Resend;
+import com.resend.services.emails.model.SendEmailRequest;
+import com.resend.services.emails.model.SendEmailResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailService {
+
+    @Value("${resend.api.key}")
+    private String resendApiKey;
+
+    @Value("${parqueadero.email.from}")
+    private String emailFrom;
+
+    @Value("${parqueadero.email.subject}")
+    private String emailSubject;
+
+    public void enviarNotificacionNuevoVehiculo(ParqueaderoVehiculo vehiculo) {
+
+        Resend resend = new Resend(resendApiKey);
+
+        SendEmailRequest request = SendEmailRequest.builder()
+                .from(emailFrom)  // Ej: "onboarding@resend.dev"
+                .to(vehiculo.getCorreoElectronico())
+                .subject(emailSubject)
+                .html(generarContenidoHTML(vehiculo))
+                .build();
+
+        try {
+            SendEmailResponse response = resend.emails().send(request);
+            System.out.println("✉️ CORREO ENVIADO ✔ ID: " + response.getId());
+        } catch (Exception e) {
+            System.out.println("❌ ERROR AL ENVIAR CORREO: " + e.getMessage());
+        }
+    }
+
+    private String generarContenidoHTML(ParqueaderoVehiculo vehiculo) {
+        return """
+                <h2>Vehículo registrado</h2>
+                <p>Se registró un nuevo vehículo:</p>
+                <ul>
+                    <li><strong>Placa:</strong> %s</li>
+                    <li><strong>Tipo:</strong> %s</li>
+                    <li><strong>Marca:</strong> %s</li>
+                    <li><strong>Modelo:</strong> %s</li>
+                    <li><strong>Color:</strong> %s</li>
+                </ul>
+                """.formatted(
+                vehiculo.getPlaca(),
+                vehiculo.getTipo(),
+                vehiculo.getMarca(),
+                vehiculo.getModelo(),
+                vehiculo.getColor()
+        );
+    }
+}
+
+
+
+
+/*package com.example.Bio_Code.servicios;
+
+import com.example.Bio_Code.modelo.ParqueaderoVehiculo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,3 +190,4 @@ public class EmailService {
         );
     }
 }
+*/
